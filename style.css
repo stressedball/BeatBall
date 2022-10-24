@@ -1,0 +1,48 @@
+html {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: grey;
+}
+
+.bar {
+    height: 5vh;
+    width: 20vw;
+    position: absolute;
+    bottom: 10vh;
+    border-radius: 5px;
+    background-color: navy;
+}
+
+.ball {
+    position: relative;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background-color: black;
+}
+
+.tile {
+    background-color: red;
+    border: 1px solid;
+}
+
+.tileRemove {
+    visibility: hidden;
+}
+
+.tilesContainer {
+    display: grid;
+    width: 60vw;
+    height: 40vh;
+    position: absolute;
+    left: 20vw;
+}
