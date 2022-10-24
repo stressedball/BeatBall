@@ -1,6 +1,7 @@
 'use strict';
 
 const body = document.querySelector('body');
+const updateScore = document.getElementById('updateScore');
 let ball;
 let ballLeft = 0;
 let ballRight = 0;
@@ -16,10 +17,10 @@ let degree = 0;
 let initialPosition = 0;
 let keyPressed = '';
 let leftPosition = 0;
-let max = 5;
-let min = -5;
-let minTileWidth = 100;
-let minTileHeight = 50;
+let max = 3;
+let min = -3;
+let minTileWidth = 0;
+let minTileHeight = 0;
 let moveUp = false;
 let moveDown = false;
 let moveRight = false;
@@ -30,6 +31,7 @@ let platformBottom = 0;
 let platformTop = 0;
 let platformRight = 0;
 let platformLeft = 0;
+let playerScore = 0;
 let radian = 0;
 let rightPosition = 0;
 let shift = 0;
@@ -44,6 +46,8 @@ let tilesContainerWidth = 0;
 let tilesContainerHeigth = 0;
 let tileNodeList;
 let tilesRows = 0;
+
+//listening to Enter and arrow left and right
 window.addEventListener('load', preGame);
 window.addEventListener('keydown', moveBar);
 
@@ -86,6 +90,8 @@ function makeTiles() {
     tilesContainer.classList.add('tilesContainer');
     tilesContainerWidth = 0.6 * bodyWidth;
     tilesContainerHeigth = 0.4 * bodyHeight;
+    minTileHeight = tilesContainerHeigth / 5;
+    minTileWidth = tilesContainerWidth / 5;
     tilesColumns = (tilesContainerWidth) / minTileWidth;
     tilesColumns = Math.floor(tilesColumns);
     tilesRows = tilesContainerHeigth / minTileHeight;
@@ -107,7 +113,6 @@ function makeTiles() {
         tileBox['left'] = Math.floor(tile.getBoundingClientRect().left);
         tileArray.push(tileBox);
     }
-
     tileNodeList = document.querySelectorAll('.tile');
 }
 
@@ -158,17 +163,16 @@ function game() {
     ballRight = Math.floor(ball.getBoundingClientRect().right);
     ballBottom = Math.floor(ball.getBoundingClientRect().bottom);
 
-    if (startGame === true) {
-        ballMovement();
+    updateScore.textContent = playerScore;
+
+    //if no more tiles, player wins
+    if (tileArray.length === 0) {
+        alert('YOU WON');   
+        startGame = false;
+        return;     
     }
-    setTimeout(function() {
-        game();
-    }, 10);
-    
-}
 
-function ballMovement() {
-
+    //if ball touches bottom vp, game over
     //gameOver
     if (ballBottom === bodyHeight) {
         startGame = false;
@@ -176,32 +180,59 @@ function ballMovement() {
         return;
     }
     
+    if (startGame === true) {
+        ballTileCollisions();
+        ballMovement();
+    }
+
+    setTimeout(function() {
+        game();
+    }, 1);
+    
+}
+
+function ballTileCollisions() {
+    
+    if (tileArray.length === 0) {
+        return;
+    }
+
+    //ball hits tile
     for (let i = 0; i < tileArray.length; i++) {
+
         if (ballRight === tileArray[i].left) {
-            if (ballTop >= tileArray[i].top && ballBottom <= tileArray[i].bottom) {
-                moveLeft = true;
-                moveRight = false;
+            if (ballTop >= tileArray[i].top - 15 && ballBottom <= tileArray[i].bottom + 15) {
                 removeTile(i);
+                shift = -Math.abs(shift);
+                playerScore += 10;
             }
         } else if (ballLeft === tileArray[i].right) {
-            if (ballTop >= tileArray[i].top && ballBottom <= tileArray[i].bottom) {
-                moveLeft = false;
-                moveRight = true;   
+            // if (tileArray[i].top <= ballTop)
+            if (ballTop >= tileArray[i].top - 15 && ballBottom <= tileArray[i].bottom + 15) {
                 removeTile(i);
+                console.log(shift)
+                shift = Math.abs(shift);
+                playerScore += 10;
             }            
         } else if (ballTop === tileArray[i].bottom) {
-            if (ballLeft >= tileArray[i].left && ballRight <= tileArray[i].right) {
-                moveUp = false;
+            if (ballLeft >= tileArray[i].left - 15 && ballRight <= tileArray[i].right + 15) {
                 removeTile(i);
+                moveUp = false;
+                playerScore += 10;
             }
         } else if (ballBottom === tileArray[i].top) {
-            if (ballLeft >= tileArray[i].left && ballRight <= tileArray[i].right) {
-                moveUp = true;
+            if (ballLeft >= tileArray[i].left - 15 && ballRight <= tileArray[i].right + 15) {
                 removeTile(i);
+                moveUp = true;
+                playerScore += 10;
             }            
         }
-    }    
-    
+    }  
+
+}
+function ballMovement() {   
+
+
     //if ball hits platform
     //add partial hit detection
     if (ballBottom === platformTop) {
@@ -216,7 +247,7 @@ function ballMovement() {
     }
     
     //if ball hits right
-    if(bodyWidth - ballRight <= shift && shift > 0) {
+    if (bodyWidth - ballRight <= shift && shift > 0) {
         moveLeft = true;
     }
     
@@ -224,10 +255,6 @@ function ballMovement() {
     if (ballTop === 0) {
         moveUp = false;
     }   
-    
-/*    if (moveUp === true && ballTop === 0) {
-        moveUp = false;
-    }*/
    
     if (moveUp === true) {
         ballTop -= 1;
@@ -238,35 +265,33 @@ function ballMovement() {
     }
    
     if (moveRight === true){
-       ballLeft += shift; 
-       shift = Math.abs(shift);
-       moveRight = false;
+        ballLeft -= ballLeft; 
+        ballRight -= ballLeft;
+        ball.style.left = ballLeft + 'px';
+        ball.style.right = ballRight + 'px';
+        shift = Math.abs(shift);
+        moveRight = false;
    }
    
-   if (moveLeft === true) {
-       ballLeft += shift;
-       shift = -(Math.abs(shift));
-       moveLeft = false;
-   }
-
-    if (shift < 0) {
-        ballLeft += shift;
+    if (moveLeft === true) {
+        ballLeft += bodyWidth - ballRight; 
+        ballRight += bodyWidth - ballRight;
         ball.style.left = ballLeft + 'px';
-        ballRight += shift;
         ball.style.right = ballRight + 'px';
-    } else if (shift > 0) {
-        ballLeft += shift;
-        ball.style.left = ballLeft + 'px';
-        ballRight += shift;
-        ball.style.right = ballRight + 'px';
-    } else if (shift === 0) {
-        return;
+        shift = -Math.abs(shift);
+        moveLeft = false;
     }
+
+   ballLeft += shift;
+   ball.style.left = ballLeft + 'px';
+   ballRight += shift;
+   ball.style.right = ballRight + 'px';
 }
+
+
 
 function removeTile(i) {
     tileNodeList[tileArray[i].index].classList.remove('tile');
     tileNodeList[tileArray[i].index].classList.add('tileRemove');
     tileArray.splice(i, 1);
-    console.log(tileArray)
 }

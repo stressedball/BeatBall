@@ -30,6 +30,11 @@ body {
     background-color: black;
 }
 
+#playerScore {
+    display: flex;
+    position: absolute;
+}
+
 .tile {
     background-color: red;
     border: 1px solid;
